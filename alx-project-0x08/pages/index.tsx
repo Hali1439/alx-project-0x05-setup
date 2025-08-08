@@ -2,19 +2,29 @@ import ImageCard from "@/components/common/ImageCard";
 import { ImageProps } from "@/interfaces";
 import { useState } from "react";
 
-
-
 const Home: React.FC = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [generatedImages, setGeneratedImages] = useState<ImageProps[]>(
-    []
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-
+  const [generatedImages, setGeneratedImages] = useState<ImageProps[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleGenerateImage = async () => {
-    console.log("Generating Images");
+    setIsLoading(true);
+    console.log("Generating Images for prompt:", prompt);
+    
+    try {
+      // Simulate API call with timeout
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // For testing purposes, use a placeholder image
+      const testImageUrl = `https://via.placeholder.com/512x512/3b82f6/ffffff?text=${encodeURIComponent(prompt)}`;
+      setImageUrl(testImageUrl);
+      setGeneratedImages(prev => [...prev, { imageUrl: testImageUrl, prompt }]);
+    } catch (error) {
+      console.error("Error generating image:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,16 +45,41 @@ const Home: React.FC = () => {
           />
           <button
             onClick={handleGenerateImage}
-            className="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+            disabled={isLoading}
+            className={`w-full p-3 rounded-lg transition duration-200 ${
+              isLoading 
+                ? "bg-blue-400 cursor-not-allowed" 
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white`}
           >
-            {/* {
-              isLoading ? "Loading..." : "Generate Image"
-            } */}
-            Generate Image
+            {isLoading ? "Generating..." : "Generate Image"}
           </button>
         </div>
 
-        {imageUrl && <ImageCard action={() => setImageUrl(imageUrl)} imageUrl={imageUrl} prompt={prompt} />}
+        {imageUrl && (
+          <ImageCard 
+            action={() => setImageUrl(imageUrl)} 
+            imageUrl={imageUrl} 
+            prompt={prompt} 
+          />
+        )}
+
+        {generatedImages.length > 0 && (
+          <div className="mt-8 w-full max-w-4xl">
+            <h3 className="text-xl font-semibold mb-4">Generated Images</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {generatedImages.map((image, index) => (
+                <ImageCard
+                  key={index}
+                  action={() => setImageUrl(image.imageUrl)}
+                  imageUrl={image.imageUrl}
+                  prompt={image.prompt}
+                  width="w-full"
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
